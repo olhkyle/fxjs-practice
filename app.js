@@ -2,7 +2,7 @@
 const { L, C } = window._;
 
 // _ 라는 namespace 호출 후
-// L.take(limit ~) -> takeLazy {suspended } 라는 '아직 평가되지 않은 lazy 상태의 값을 반환'
+// L.take(limit ~) -> takeLazy { suspended } 라는 '아직 평가되지 않은 lazy 상태의 값을 반환'
 // C
 
 // 1. 홀수 n개 더하기
@@ -83,3 +83,37 @@ const f3 = (end) => {
 };
 
 f3(10);
+
+/**
+ * 추억의 별 그리기, 구구단
+ * _ 는 즉시 평가
+ * L 는 lazy(suspended)
+ */
+
+// 1. 별 그리기
+// L을 활용하여 map으로 순회하면서 지연되게 하면서 만들게 하여 배열을 덜 만들 수 있다.
+const join = (separator) => _.reduce((a, b) => `${a}${separator}${b}`);
+
+_.go(
+  L.range(1, 6),
+  L.map(_.range),
+  L.map(L.map((_) => "*")),
+  L.map(join("")),
+  join("\n"),
+  console.log
+);
+
+// 2. 구구단
+// _.range(2,10)은 2이상 10미만을 의미
+_.go(
+  _.range(2, 10),
+  _.map((a) =>
+    _.go(
+      _.range(1, 10),
+      _.map((b) => `${a}x${b}=${a * b}`),
+      join("\n")
+    )
+  ),
+  join("\n\n"),
+  console.log
+);
