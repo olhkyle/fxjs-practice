@@ -1,6 +1,10 @@
 // 이터러블 프로그래밍 혹은 리스트 프로세싱(Lisp)
 const { L, C } = window._;
 
+// _ 라는 namespace 호출 후
+// L.take(limit ~) -> takeLazy {suspended } 라는 '아직 평가되지 않은 lazy 상태의 값을 반환'
+// C
+
 // 1. 홀수 n개 더하기
 const f1 = (limit, list) => {
   let acc = 0;
@@ -28,7 +32,25 @@ console.log("f1", f1(3, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]));
 const f2 = (limit, list) => {
   let acc = 0;
 
-  for (const a of L.take(
+  const add = (acc, cur) => acc + cur;
+
+  // prettier-ignore
+  _.reduce(add,
+    L.take(limit,
+      L.map((a) => a * a,
+        L.filter((a) => a % 2, list))));
+
+  // 상단의 코드가 읽기 어렵기 때문에 _.go()와 같은 코드로 사람이 읽기 좋은 코드로 뒤집을수도 있습니다. 위와 똑같이 동작합니다.
+  _.go(
+    list,
+    L.filter((a) => a % 2),
+    L.map((a) => a * a),
+    L.take(limit),
+    _.reduce(add),
+    console.log
+  );
+  /**
+   *  for (const a of L.take(
     limit,
     L.map(
       (a) => a * a,
@@ -38,32 +60,26 @@ const f2 = (limit, list) => {
     acc += a;
     // if ((limit -= 1) == 0) break; // index가 3번째까지만 가져온다는 뜻
   }
+   */
 
   return acc;
 };
 
-// L.filter(conditionArrowFunction, iterable)
-const it = L.filter((a) => a % 2, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
-console.log(it); // Generator {<suspended>}
-
-const its = [...it];
-console.log(it); /// Generator {<suspended>}
-
-console.log(its); // spread syntax로 즉시 평가 [1,3,5,7,9]
-// console.log(it.next());
-// console.log(it.next());
-// console.log(it.next());
-// console.log(it.next());
-// console.log(it.next());
-
 /**
- * L.take(limit, iterable)
- * 최대 limit 만큼 요소를 꺼내겠다는 의미
+ * 6. while을 range로
+ * 7. 효과를 each로 구분
  */
 
-const it1 = L.take(2, [1, 2, 3]);
-console.log(it1);
-console.log(it1.next()); // { value :1, done: false}
-console.log(it1.next()); // { value :2, done: false}
+const f3 = (end) => {
+  let i = 0;
+  // L.range(?start, ?stop, ?step)
+  // while 문과 같은 명령형 프로그래밍고 달리 범위를 선언적으로 지정하여 표현할 수 있다.
 
-console.log("f2", f2(3, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]));
+  // _.each -> 부수 효과가 있다는 것을 구분하는 함수로 볼 수 있다.
+  // 앞으로 어떤 일이 일어날 것이다라고 이야기 할 수 있다.
+  _.each(console.log, L.range(1, end, 2)); // 1 3 5 7 9
+
+  _.go(L.range(1, end, 2), _.each(console.log));
+};
+
+f3(10);
